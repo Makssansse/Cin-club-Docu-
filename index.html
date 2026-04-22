@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Réel — Ciné-club ESEC</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --noir:#0a0a0a;
+  --blanc:#f5f0e8;
+  --rouge:#e8321a;
+  --jaune:#f5c842;
+  --bleu:#1a3ae8;
+  --vert:#2ae87a;
+  --gris:#2a2a2a;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--blanc);color:var(--noir);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
+
+/* CURSEUR */
+.cursor{position:fixed;width:12px;height:12px;background:var(--rouge);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,background .2s}
+.cursor.big{width:40px;height:40px;background:transparent;border:2px solid var(--rouge);mix-blend-mode:multiply}
+
+/* GRAIN */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.4}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.25rem 2.5rem;display:flex;align-items:center;justify-content:space-between;mix-blend-mode:multiply}
+.nav-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1rem;color:var(--noir);text-decoration:none;letter-spacing:-.02em}
+.nav-logo span{color:var(--rouge)}
+.nav-links{display:flex;gap:2rem}
+.nav-links a{font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;color:var(--noir);text-decoration:none;text-transform:uppercase;letter-spacing:.1em;opacity:.6;transition:opacity .2s}
+.nav-links a:hover{opacity:1}
+.nav-tag{background:var(--rouge);color:var(--blanc);font-size:0.7rem;font-weight:500;padding:0.2rem 0.6rem;border-radius:20px;text-transform:uppercase;letter-spacing:.08em}
+
+/* HERO */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden}
+.hero-left{padding:8rem 2.5rem 4rem;display:flex;flex-direction:column;justify-content:flex-end;background:var(--noir);position:relative}
+.hero-left::after{content:'';position:absolute;right:-1px;top:0;bottom:0;width:2px;background:var(--rouge)}
+.hero-eyebrow{font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:var(--rouge);margin-bottom:1.5rem}
+.hero-title{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(3.5rem,7vw,6rem);line-height:.9;color:var(--blanc);letter-spacing:-.04em;margin-bottom:2rem}
+.hero-title em{font-family:'DM Serif Display',serif;font-style:italic;font-weight:400;color:var(--jaune)}
+.hero-desc{font-size:1rem;line-height:1.7;color:rgba(245,240,232,.6);max-width:380px;margin-bottom:3rem}
+.hero-cta{display:inline-flex;align-items:center;gap:0.75rem;background:var(--rouge);color:var(--blanc);font-family:'Unbounded',sans-serif;font-size:0.75rem;font-weight:700;padding:1rem 1.75rem;text-decoration:none;text-transform:uppercase;letter-spacing:.08em;transition:transform .2s}
+.hero-cta:hover{transform:translate(3px,-3px)}
+.hero-cta-arrow{font-size:1.1rem}
+
+.hero-right{background:var(--jaune);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hero-right-content{padding:2rem;text-align:center}
+.next-label{font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:rgba(10,10,10,.5);margin-bottom:1rem}
+.next-theme{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(1.8rem,4vw,3.5rem);line-height:1;color:var(--noir);letter-spacing:-.03em;text-transform:uppercase;margin-bottom:1.5rem}
+.next-date-box{background:var(--noir);color:var(--jaune);display:inline-block;padding:0.75rem 1.5rem;font-family:'Unbounded',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:.05em;margin-bottom:1.5rem}
+.next-film-card{background:var(--blanc);padding:1.25rem;text-align:left;max-width:300px;margin:0 auto}
+.next-film-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;margin-bottom:0.25rem}
+.next-film-meta{font-size:0.75rem;color:rgba(10,10,10,.5)}
+.hero-deco{position:absolute;font-family:'Unbounded',sans-serif;font-size:15rem;font-weight:900;color:rgba(10,10,10,.05);line-height:1;pointer-events:none;bottom:-2rem;right:-2rem}
+
+/* SECTION GÉNÉRIQUE */
+section{padding:6rem 2.5rem}
+.section-label{font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:var(--rouge);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem}
+.section-label::before{content:'';width:2rem;height:1px;background:var(--rouge)}
+.section-title{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(2rem,4vw,3.5rem);line-height:1;letter-spacing:-.03em;margin-bottom:3rem}
+
+/* PROGRAMME */
+.programme{background:var(--noir);color:var(--blanc)}
+.programme .section-label{color:var(--jaune)}
+.programme .section-label::before{background:var(--jaune)}
+.programme .section-title{color:var(--blanc)}
+.seances-list{display:flex;flex-direction:column;gap:0}
+.seance{display:grid;grid-template-columns:120px 1fr auto;gap:2rem;align-items:center;padding:2rem 0;border-bottom:1px solid rgba(245,240,232,.1);transition:background .2s;cursor:pointer}
+.seance:hover{background:rgba(245,240,232,.03)}
+.seance:first-child{border-top:1px solid rgba(245,240,232,.1)}
+.seance-date{text-align:center}
+.seance-day{font-family:'Unbounded',sans-serif;font-size:2.5rem;font-weight:900;line-height:1;color:var(--jaune)}
+.seance-month{font-size:0.72rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(245,240,232,.4);margin-top:0.25rem}
+.seance-info{}
+.seance-theme-tag{display:inline-block;background:var(--rouge);color:var(--blanc);font-size:0.65rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;padding:0.2rem 0.65rem;margin-bottom:0.75rem}
+.seance-film{font-family:'DM Serif Display',serif;font-size:1.4rem;font-style:italic;color:var(--blanc);margin-bottom:0.25rem}
+.seance-real{font-size:0.8rem;color:rgba(245,240,232,.5)}
+.seance-lieu{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:rgba(245,240,232,.4);text-transform:uppercase;letter-spacing:.08em}
+.seance-heure{font-family:'Unbounded',sans-serif;font-size:1.5rem;font-weight:700;color:var(--blanc);text-align:right;white-space:nowrap}
+.seance-heure span{display:block;font-size:0.7rem;font-weight:300;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:.1em;margin-top:0.25rem}
+.seance.special{border-left:3px solid var(--vert)}
+.seance.special .seance-theme-tag{background:var(--vert);color:var(--noir)}
+
+/* THÈMES */
+.themes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--noir);margin-top:3rem}
+.theme-card{background:var(--blanc);padding:2.5rem 2rem;position:relative;overflow:hidden;transition:transform .3s}
+.theme-card:hover{transform:translate(-4px,-4px);z-index:2}
+.theme-card:hover .theme-num{opacity:.15}
+.theme-num{font-family:'Unbounded',sans-serif;font-size:5rem;font-weight:900;color:var(--noir);opacity:.06;position:absolute;top:-1rem;right:1rem;line-height:1;transition:opacity .3s}
+.theme-color{width:2.5rem;height:4px;margin-bottom:1.5rem}
+.theme-name{font-family:'Unbounded',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-.02em;margin-bottom:0.75rem;line-height:1.2}
+.theme-desc{font-size:0.85rem;line-height:1.65;color:rgba(10,10,10,.55);margin-bottom:1.25rem}
+.theme-films{font-size:0.72rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(10,10,10,.35)}
+.theme-card.actif{background:var(--noir);color:var(--blanc)}
+.theme-card.actif .theme-desc{color:rgba(245,240,232,.5)}
+.theme-card.actif .theme-films{color:rgba(245,240,232,.3)}
+.theme-card.actif .theme-num{color:var(--blanc)}
+.badge-actif{display:inline-block;background:var(--rouge);color:var(--blanc);font-size:0.62rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;padding:0.2rem 0.6rem;margin-bottom:1rem}
+
+/* INFOS */
+.infos{background:var(--jaune)}
+.infos-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+.infos-block{}
+.info-item{display:flex;gap:1.5rem;padding:1.5rem 0;border-bottom:1px solid rgba(10,10,10,.15)}
+.info-item:last-child{border:none}
+.info-icon{font-size:1.5rem;flex-shrink:0;margin-top:.1rem}
+.info-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:.12em;opacity:.5;margin-bottom:0.35rem}
+.info-value{font-family:'DM Serif Display',serif;font-size:1.1rem;font-style:italic;line-height:1.4}
+.infos-manifesto{background:var(--noir);color:var(--blanc);padding:3rem;position:relative;overflow:hidden}
+.infos-manifesto blockquote{font-family:'DM Serif Display',serif;font-style:italic;font-size:1.4rem;line-height:1.6;color:var(--blanc);position:relative;z-index:1}
+.infos-manifesto blockquote::before{content:'"';font-size:8rem;color:var(--rouge);opacity:.3;position:absolute;top:-2rem;left:-1rem;font-family:'DM Serif Display',serif;line-height:1}
+.infos-manifesto cite{display:block;margin-top:1.5rem;font-family:'DM Sans',sans-serif;font-style:normal;font-size:0.75rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(245,240,232,.4)}
+
+/* FOOTER */
+footer{background:var(--noir);color:var(--blanc);padding:3rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;border-top:3px solid var(--rouge)}
+.footer-logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.5rem;color:var(--blanc)}
+.footer-logo span{color:var(--rouge)}
+.footer-info{font-size:0.78rem;color:rgba(245,240,232,.4);text-align:center}
+.footer-esec{font-size:0.75rem;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:.1em}
+
+/* MODAL SÉANCE */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,10,.9);z-index:500;align-items:center;justify-content:center;padding:2rem}
+.modal-overlay.open{display:flex}
+.modal-seance{background:var(--blanc);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modal-header{background:var(--noir);padding:2rem;position:relative}
+.modal-theme-tag{display:inline-block;background:var(--rouge);color:var(--blanc);font-size:0.65rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;padding:0.2rem 0.65rem;margin-bottom:1rem}
+.modal-film-title{font-family:'DM Serif Display',serif;font-size:1.8rem;font-style:italic;color:var(--blanc);margin-bottom:0.5rem}
+.modal-film-real{font-size:0.85rem;color:rgba(245,240,232,.5)}
+.modal-close{position:absolute;top:1.5rem;right:1.5rem;background:none;border:1px solid rgba(245,240,232,.3);color:var(--blanc);width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:2rem}
+.modal-info-row{display:flex;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.modal-info-item{flex:1;min-width:120px}
+.modal-info-item label{font-size:0.68rem;text-transform:uppercase;letter-spacing:.12em;opacity:.4;display:block;margin-bottom:0.3rem}
+.modal-info-item strong{font-family:'DM Serif Display',serif;font-size:1rem;font-style:italic}
+.modal-synopsis{font-size:0.9rem;line-height:1.75;color:rgba(10,10,10,.65);border-top:1px solid rgba(10,10,10,.1);padding-top:1.5rem}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp .7s ease forwards}
+.fade-up:nth-child(2){animation-delay:.1s}
+.fade-up:nth-child(3){animation-delay:.2s}
+.fade-up:nth-child(4){animation-delay:.3s}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-left{padding:6rem 1.5rem 3rem}
+  .hero-right{padding:3rem 1.5rem;min-height:50vh}
+  section{padding:4rem 1.5rem}
+  .infos-grid{grid-template-columns:1fr}
+  .seance{grid-template-columns:80px 1fr;gap:1rem}
+  .seance-heure{display:none}
+  footer{flex-direction:column;text-align:center;padding:2rem 1.5rem}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Le <span>Réel</span></a>
+  <div class="nav-links">
+    <a href="#programme">Programme</a>
+    <a href="#themes">Thèmes</a>
+    <a href="#infos">Infos pratiques</a>
+  </div>
+  <span class="nav-tag">ESEC Paris</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow fade-up">Ciné-club documentaire · ESEC Paris</div>
+    <h1 class="hero-title fade-up">Le<br><em>Réel</em></h1>
+    <p class="hero-desc fade-up">Des séances bi-mensuelles autour du documentaire, à l'ESEC. Chaque soirée explore un thème, un regard, une façon de filmer le monde.</p>
+    <a href="#programme" class="hero-cta fade-up">Voir le programme <span class="hero-cta-arrow">→</span></a>
+  </div>
+  <div class="hero-right">
+    <div class="hero-right-content">
+      <div class="next-label">Prochaine séance</div>
+      <div class="next-theme">Filmer<br>l'ailleurs</div>
+      <div class="next-date-box">Jeudi 15 Mai · 19h00</div>
+      <div class="next-film-card">
+        <div class="next-film-title">À définir</div>
+        <div class="next-film-meta">Salle A — ESEC Paris</div>
+      </div>
+    </div>
+    <div class="hero-deco">01</div>
+  </div>
+</section>
+
+<!-- PROGRAMME -->
+<section class="programme" id="programme">
+  <div class="section-label">Programme</div>
+  <h2 class="section-title">Séances<br>à venir</h2>
+  <div class="seances-list" id="seances-list">
+
+    <div class="seance" onclick="openModal('s1')">
+      <div class="seance-date">
+        <div class="seance-day">15</div>
+        <div class="seance-month">Mai 2025</div>
+      </div>
+      <div class="seance-info">
+        <div class="seance-theme-tag">Filmer l'ailleurs</div>
+        <div class="seance-film">À définir</div>
+        <div class="seance-real">Réalisateur · Année</div>
+        <div class="seance-lieu">📍 Salle A — ESEC Paris</div>
+      </div>
+      <div class="seance-heure">19h00<span>Entrée libre</span></div>
+    </div>
+
+    <div class="seance special" onclick="openModal('s2')">
+      <div class="seance-date">
+        <div class="seance-day">29</div>
+        <div class="seance-month">Mai 2025</div>
+      </div>
+      <div class="seance-info">
+        <div class="seance-theme-tag">Séance courts métrages</div>
+        <div class="seance-film">Programmation courts métrages</div>
+        <div class="seance-real">Sélection Le Réel</div>
+        <div class="seance-lieu">📍 Salle A — ESEC Paris</div>
+      </div>
+      <div class="seance-heure">19h00<span>Séance spéciale</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- THÈMES -->
+<section id="themes">
+  <div class="section-label">Thèmes de la saison</div>
+  <h2 class="section-title">Chaque séance,<br>un regard</h2>
+  <div class="themes-grid">
+
+    <div class="theme-card actif">
+      <div class="badge-actif">En cours</div>
+      <div class="theme-num">01</div>
+      <div class="theme-color" style="background:var(--rouge)"></div>
+      <div class="theme-name">Filmer l'ailleurs</div>
+      <div class="theme-desc">Le documentaire comme voyage — explorer l'étrangeté du monde, les cultures lointaines, les territoires inconnus et les identités multiples.</div>
+      <div class="theme-films">Séance · 15 mai 2025</div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-num">02</div>
+      <div class="theme-color" style="background:var(--bleu)"></div>
+      <div class="theme-name">La Violence</div>
+      <div class="theme-desc">Comment le documentaire confronte-t-il la violence — politique, sociale, intime ? Ce que la caméra ose montrer ou choisit de détourner.</div>
+      <div class="theme-films">À venir</div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-num">03</div>
+      <div class="theme-color" style="background:var(--vert)"></div>
+      <div class="theme-name">Filmer le travail</div>
+      <div class="theme-desc">Corps au travail, invisibilités économiques, résistances silencieuses. Le documentaire comme outil de mémoire sociale et politique.</div>
+      <div class="theme-films">À venir</div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-num">04</div>
+      <div class="theme-color" style="background:var(--jaune)"></div>
+      <div class="theme-name">L'Intime</div>
+      <div class="theme-desc">Autoportraits, journaux filmés, mémoires familiales. Quand le documentaire se retourne sur lui-même et filme le proche au lieu du lointain.</div>
+      <div class="theme-films">À venir</div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-num">05</div>
+      <div class="theme-color" style="background:var(--rouge)"></div>
+      <div class="theme-name">Le Corps politique</div>
+      <div class="theme-desc">Manifestations, résistances, corps en lutte. Le documentaire comme archive des mouvements politiques et sociaux.</div>
+      <div class="theme-films">À venir</div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-num">06</div>
+      <div class="theme-color" style="background:var(--bleu)"></div>
+      <div class="theme-name">Séances courts métrages</div>
+      <div class="theme-desc">Séances spéciales dédiées au format court — un espace pour découvrir des formes brèves, expérimentales ou de fin d'études.</div>
+      <div class="theme-films">Séances spéciales</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- INFOS -->
+<section class="infos" id="infos">
+  <div class="section-label">Infos pratiques</div>
+  <h2 class="section-title">Venir<br>aux séances</h2>
+  <div class="infos-grid">
+    <div class="infos-block">
+      <div class="info-item">
+        <div class="info-icon">📍</div>
+        <div>
+          <div class="info-label">Lieu principal</div>
+          <div class="info-value">ESEC Paris — Salle de projection<br>21 rue de Cîteaux, 75012 Paris</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">🗓</div>
+        <div>
+          <div class="info-label">Rythme</div>
+          <div class="info-value">Deux séances par mois<br>Jeudi soir, 19h00</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">🎟</div>
+        <div>
+          <div class="info-label">Entrée</div>
+          <div class="info-value">Gratuite, ouverte à tous<br>Étudiants ESEC en priorité</div>
+        </div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">✉️</div>
+        <div>
+          <div class="info-label">Contact</div>
+          <div class="info-value">lereel.esec@gmail.com</div>
+        </div>
+      </div>
+    </div>
+    <div class="infos-manifesto">
+      <blockquote>
+        Le documentaire n'est pas un genre — c'est une posture. Celle de regarder le monde tel qu'il est, avec les yeux grands ouverts.
+        <cite>— Le Réel, ciné-club ESEC</cite>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Le <span>Réel</span></div>
+  <div class="footer-info">Ciné-club documentaire · Bi-mensuel · Entrée libre</div>
+  <div class="footer-esec">ESEC Paris · 2024–2025</div>
+</footer>
+
+<!-- MODAL SÉANCE -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeSeanceModal()">
+  <div class="modal-seance">
+    <div class="modal-header">
+      <div class="modal-theme-tag" id="modal-theme-tag"></div>
+      <div class="modal-film-title" id="modal-film-title"></div>
+      <div class="modal-film-real" id="modal-film-real"></div>
+      <button class="modal-close" onclick="closeSeanceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-info-row">
+        <div class="modal-info-item"><label>Date</label><strong id="modal-date"></strong></div>
+        <div class="modal-info-item"><label>Heure</label><strong id="modal-heure"></strong></div>
+        <div class="modal-info-item"><label>Lieu</label><strong id="modal-lieu"></strong></div>
+        <div class="modal-info-item"><label>Entrée</label><strong id="modal-entree"></strong></div>
+      </div>
+      <div class="modal-synopsis" id="modal-synopsis"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// CURSEUR
+var cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', function(e){
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,.seance,.theme-card').forEach(function(el){
+  el.addEventListener('mouseenter', function(){ cursor.classList.add('big'); });
+  el.addEventListener('mouseleave', function(){ cursor.classList.remove('big'); });
+});
+
+// DONNÉES SÉANCES
+var seancesData = {
+  s1: {
+    theme: 'Filmer l\'ailleurs',
+    film: 'À définir',
+    real: 'Réalisateur · Année',
+    date: 'Jeudi 15 mai 2025',
+    heure: '19h00',
+    lieu: 'Salle A — ESEC Paris',
+    entree: 'Gratuite',
+    synopsis: 'La programmation de cette séance est en cours. Revenez bientôt pour découvrir le film sélectionné autour du thème "Filmer l\'ailleurs".'
+  },
+  s2: {
+    theme: 'Séance courts métrages',
+    film: 'Programmation courts métrages',
+    real: 'Sélection Le Réel',
+    date: 'Jeudi 29 mai 2025',
+    heure: '19h00',
+    lieu: 'Salle A — ESEC Paris',
+    entree: 'Gratuite',
+    synopsis: 'Séance spéciale dédiée au format court. Une sélection de documentaires courts métrages, pour explorer des formes brèves, intenses et souvent expérimentales. Programme complet à venir.'
+  }
+};
+
+function openModal(id){
+  var d = seancesData[id];
+  if(!d) return;
+  document.getElementById('modal-theme-tag').textContent = d.theme;
+  document.getElementById('modal-film-title').textContent = d.film;
+  document.getElementById('modal-film-real').textContent = d.real;
+  document.getElementById('modal-date').textContent = d.date;
+  document.getElementById('modal-heure').textContent = d.heure;
+  document.getElementById('modal-lieu').textContent = d.lieu;
+  document.getElementById('modal-entree').textContent = d.entree;
+  document.getElementById('modal-synopsis').textContent = d.synopsis;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeSeanceModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSeanceModal(); });
+</script>
+</body>
+</html>
