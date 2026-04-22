@@ -64,18 +64,19 @@ nav{
 }
 .hero-img-col{
   width:100%;
-  position:relative;
   line-height:0;
-  max-height:65vh;
-  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  background:var(--noir);
+  padding:2.5rem;
 }
 .hero-img-col img{
-  width:100%;
-  height:65vh;
-  object-fit:cover;
-  object-position:center top;
+  width:auto;
+  max-width:100%;
+  max-height:60vh;
+  height:auto;
   display:block;
-  filter:grayscale(100%) contrast(1.2) brightness(.85);
+  filter:none;
 }
 .hero-info-bar{
   background:var(--rouge);
