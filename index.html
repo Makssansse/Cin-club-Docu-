@@ -34,6 +34,7 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in:  cubic-bezier(0.64, 0, 0.78, 0);
   --ease:     cubic-bezier(0.4, 0, 0.2, 1);
+  --spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --nav-h: 60px;
 }
@@ -952,6 +953,125 @@ footer {
 .reveal-d3 { transition-delay: 0.21s; }
 .reveal-d4 { transition-delay: 0.28s; }
 
+/* ═══════════════════════════════════════════
+   ANIMATIONS MODERNES
+═══════════════════════════════════════════ */
+
+/* Reveal amélioré */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.55s var(--ease-out), transform 0.55s var(--spring);
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Nav transition */
+.nav {
+  transition: transform 0.35s var(--ease-out), box-shadow 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+/* Hover sur les cartes thèmes */
+.mois-card {
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+}
+.mois-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+}
+
+/* Liens nav avec underline animé */
+.nav-links a {
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--rouge);
+  transition: width 0.3s var(--ease-out);
+}
+.nav-links a:hover::after,
+.nav-links a[aria-current]::after {
+  width: 100%;
+}
+
+/* Boutons avec effet de remplissage */
+.btn-primary, .nav-cta {
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease, transform 0.3s var(--ease-out);
+}
+.btn-primary::before, .nav-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rouge-fonce);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s var(--ease-out);
+  z-index: 0;
+}
+.btn-primary:hover::before, .nav-cta:hover::before {
+  transform: scaleX(1);
+}
+.btn-primary span, .btn-primary > *, .nav-cta span, .nav-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pulse sur le point "séance en cours" */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* Shimmer sur images au chargement */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.img-loading {
+  background: linear-gradient(90deg, var(--chaud-1) 25%, var(--chaud-2) 50%, var(--chaud-1) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Ligne de progression de lecture */
+#read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--rouge);
+  z-index: 9999;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -1003,6 +1123,7 @@ footer {
 <body>
 
 <!-- ═══════════════ NAV ═══════════════ -->
+<div id="read-progress" aria-hidden="true"></div>
 <nav class="nav" aria-label="Navigation principale">
   <a href="#" class="nav-logo" aria-label="Le Réel — Accueil">
     LE <span class="r">RÉEL</span>
@@ -1895,20 +2016,124 @@ footer {
   modalBg.addEventListener('click', e => { if (e.target === modalBg) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+  // ── BARRE DE PROGRESSION ─────────────────────────────────────
+  const readProgress = document.getElementById('read-progress');
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    readProgress.style.width = pct + '%';
+  }, { passive: true });
+
   // ── SCROLL REVEAL ────────────────────────────────────────────
   const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
+    entries.forEach((e, i) => {
       if (e.isIntersecting) {
-        e.target.classList.add('visible');
+        const delay = e.target.dataset.delay || 0;
+        setTimeout(() => e.target.classList.add('visible'), delay);
         obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    // Stagger automatique pour les éléments dans une même section
+    const parent = el.closest('.stagger-parent');
+    if (parent) {
+      const siblings = parent.querySelectorAll('.reveal');
+      siblings.forEach((sib, idx) => { sib.dataset.delay = idx * 60; });
+    }
+    obs.observe(el);
+  });
 
   // ── TRANSITIONS INFOS-BAR ────────────────────────────────────
   ibEl.style.transition = 'opacity 0.22s ease';
+
+  // ── PARALLAX HERO ────────────────────────────────────────────
+  const heroImgs = document.querySelectorAll('.carousel-slide img');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y < window.innerHeight) {
+      heroImgs.forEach(img => {
+        img.style.transform = `scale(1.03) translateY(${y * 0.12}px)`;
+      });
+    }
+  }, { passive: true });
+
+  // ── CURSOR MAGNETIQUE SUR LES BOUTONS ────────────────────────
+  document.querySelectorAll('.btn-primary, .nav-cta, .hero-side-cta').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+      btn.style.transition = 'transform 0.4s var(--ease-out)';
+    });
+  });
+
+  // ── NAV SCROLL EFFECT ────────────────────────────────────────
+  const nav = document.querySelector('.nav');
+  let lastY = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y > 80) {
+      nav.style.boxShadow = '0 1px 20px rgba(0,0,0,0.08)';
+      nav.style.background = 'rgba(244,240,230,0.95)';
+      nav.style.backdropFilter = 'blur(12px)';
+    } else {
+      nav.style.boxShadow = '';
+      nav.style.background = '';
+      nav.style.backdropFilter = '';
+    }
+    // Masquer nav au scroll bas, réafficher au scroll haut
+    if (y > lastY + 8 && y > 200) {
+      nav.style.transform = 'translateY(-100%)';
+    } else if (y < lastY - 4) {
+      nav.style.transform = 'translateY(0)';
+    }
+    lastY = y;
+  }, { passive: true });
+
+  // ── HOVER LIFT SUR LES SÉANCES ───────────────────────────────
+  document.querySelectorAll('.seance').forEach(s => {
+    s.addEventListener('mouseenter', () => {
+      s.style.transition = 'transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out)';
+      s.style.transform = 'translateX(4px)';
+      s.style.boxShadow = '-4px 0 0 var(--rouge)';
+    });
+    s.addEventListener('mouseleave', () => {
+      s.style.transform = '';
+      s.style.boxShadow = '';
+    });
+  });
+
+  // ── COMPTEUR ANIMÉ ───────────────────────────────────────────
+  function animateCounter(el, target, duration) {
+    let start = 0;
+    const step = timestamp => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(ease * target);
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    };
+    requestAnimationFrame(step);
+  }
+
+  const counterObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const target = parseInt(e.target.dataset.count);
+        if (target) animateCounter(e.target, target, 1200);
+        counterObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
 
 })();
 </script>
