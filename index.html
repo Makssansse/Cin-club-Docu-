@@ -1838,7 +1838,6 @@ footer {
 
   function resetTimer() {
     clearInterval(timer);
-    timer = setInterval(() => goTo((cur + 1) % slides.length, 1), 6500);
   }
 
   document.getElementById('js-prev').addEventListener('click', () => goTo((cur - 1 + slides.length) % slides.length, -1));
